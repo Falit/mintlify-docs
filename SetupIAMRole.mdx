@@ -1,0 +1,94 @@
+---
+description: "Preview changes locally to update your docs"
+title: "Setup IAM Role for Temporary Access"
+---
+
+## AWS Cost Explorer Access via IAM Role for Developers
+
+Cloudcost would use STS Temporary Role for accessing the AWS Cloud Reports.  This is the safest option available for an external account accessing to specific resource on AWS.
+
+This process involves creating an IAM role with the necessary permissions and then using STS to assume this role, which provides you with temporary credentials that can be used to access AWS resources.
+
+In short , you need to create  IAM Role which has
+
+* Access only to Cost Explorer
+
+* Allows External Account to Assume Role via STS
+
+> Note : Cloudcost doesn't save any information related to your cloud. We find this runtime and give the reports on Slack
+
+### [](https://docs.pagerly.io/how-to-work-with-pagerly/cloud-cost-app/setup-iam-role-for-temporary-access#setting-up-iam-role)&#xA;Setting up IAM Role
+
+### [](https://docs.pagerly.io/how-to-work-with-pagerly/cloud-cost-app/setup-iam-role-for-temporary-access#id-1.-creating-an-iam-role)&#xA;1\. Creating an IAM Role
+
+An IAM role allows you to delegate access with defined permissions, which can be assumed by users, applications, or AWS services without needing to share access keys.
+
+#### [](https://docs.pagerly.io/how-to-work-with-pagerly/cloud-cost-app/setup-iam-role-for-temporary-access#steps-to-create-an-iam-role-for-aws-cost-explorer-for-external-access)&#xA;Steps to Create an IAM Role for AWS Cost Explorer for External Access:
+
+1. **Sign in to the AWS Management Console**: Navigate to the IAM service.
+
+2. **Navigate to Roles**: Click on "Roles" on the sidebar, then click "Create role".
+
+3. **Select Type of Trusted Entity**:
+
+   * For access by external accounts or IAM users within your account, select "Another AWS account".
+
+4. **Specify Details**:
+
+   * If you selected "Another AWS account", enter the account ID :  065318983578
+
+5. **Click Next: Permissions**.
+
+6. ### [](https://docs.pagerly.io/how-to-work-with-pagerly/cloud-cost-app/setup-iam-role-for-temporary-access#creating-a-trust-policy-with-pagerly)&#xA;Creating a Trust Policy with Cloudcost
+
+   A trust policy defines who is allowed to assume the role. You’ll specify this in the role creation process,CloustCost AWS Account Id : 065318983578
+
+   #### [](https://docs.pagerly.io/how-to-work-with-pagerly/cloud-cost-app/setup-iam-role-for-temporary-access#trust-policy-for-allowing-pagerly)&#xA;Trust Policy for Allowing Cloudcost:
+
+   `{    "Version": "2012-10-17",    "Statement": [        {            "Effect": "Allow",            "Principal": {                "AWS": "arn:aws:iam::065318983578:user/pagerly-cloudcost"            },            "Action": "sts:AssumeRole",            "Condition": {}        }    ]}`
+
+### [](https://docs.pagerly.io/how-to-work-with-pagerly/cloud-cost-app/setup-iam-role-for-temporary-access#id-2.-creating-and-attaching-the-policy-for-cost-explorer-access)&#xA;2\. Creating and Attaching the Policy for Cost Explorer Access
+
+In this step, you'll create a policy that grants permissions to access AWS Cost Explorer and then attach it to the IAM role.
+
+#### [](https://docs.pagerly.io/how-to-work-with-pagerly/cloud-cost-app/setup-iam-role-for-temporary-access#create-the-policy)&#xA;Create the Policy:
+
+1. **Navigate to to IAM Role just created**
+
+2. Go to Add permissions and Create Inline Policy
+
+3. **Choose the Service**: Select "Cost Explorer Service".
+
+4. **Add Actions**: Choose actions you want to allow, such as `GetCostAndUsage and `GetCostForecast.
+
+5. **Set Resource to All**: Since Cost Explorer does not support resource-level permissions, use `"Resource": "*"`.
+
+6. **Review and Name Your Policy**: Enter a name and description for your policy, then click "Create policy".
+
+Or add the following Policy Directly&#x20;
+
+Copy
+
+`{
+    "Version": "2012-10-17",
+    "Statement": [ 	 {
+		"Effect": "Allow",
+		"Action": "ce:GetCostAndUsage",
+		"Resource": "*"
+	}, 	{
+		"Effect": "Allow",
+		"Action": "ce:GetCostForecast",
+		"Resource": "*"
+	}
+    ]
+}`
+
+#### [](https://docs.pagerly.io/how-to-work-with-pagerly/cloud-cost-app/setup-iam-role-for-temporary-access#attach-the-policy-to-your-role)&#xA;Attach the Policy to Your Role:
+
+1. **Go Back to Your Role**: Find the role you created in the Roles menu.
+
+2. **Attach Policies**: Click "Attach policies", find the policy you just created, select it, and then click "Attach policy".
+
+### [](https://docs.pagerly.io/how-to-work-with-pagerly/cloud-cost-app/setup-iam-role-for-temporary-access#undefined)
+
+Following this guide, you've created an IAM role with the necessary permissions for accessing only  AWS Cost Explorer and allowing CloudCost App to access this role
